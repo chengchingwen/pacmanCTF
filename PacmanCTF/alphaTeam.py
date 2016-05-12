@@ -16,7 +16,7 @@ from captureAgents import CaptureAgent
 import random, time, util
 from game import Directions, Actions
 import game
-from multiAgents import AlphaBetaAgent
+from multiAgents import AlphaBetaAgent,  ExpectimaxAgent
 
 
 #################
@@ -24,7 +24,7 @@ from multiAgents import AlphaBetaAgent
 #################
 
 def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
-               first = 'alphaAgent', second = 'alphaAgent', third = 'alphaAgent'):
+               first = 'expAgent', second = 'alphaAgent', third = 'expAgent'):
   """
   This function should return a list of three agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -48,6 +48,47 @@ def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
 # Agents #
 ##########
 
+
+
+class expAgent( ExpectimaxAgent):
+    '''def __init__(self, index):
+          ApproximateQAgent.__init__(self, index)
+
+        print index, self
+        Capt    ureAgent.__init__(self, index)
+        print self.index
+    '''
+    def registerInitialState(self, gameState):
+        CaptureAgent.registerInitialState(self, gameState)
+
+    def getAction(self, gameState):
+        """
+        Calls chooseAction on a grid position, but continues on half positions.
+        If you subclass CaptureAgent, you shouldn't need to override this method.  It
+        takes care of appending the current gameState on to your observation history
+        (so you have a record of the game states of the game) and will call your
+        choose action method if you're in a state (rather than halfway through your last
+        move - this occurs because Pacman agents move half as quickly as ghost agents).
+
+        """
+        self.observationHistory.append(gameState)
+        myState = gameState.getAgentState(self.index)
+        myPos = myState.getPosition()
+        if myPos != util.nearestPoint(myPos):
+          # We're halfway from one position to the next
+              return gameState.getLegalActions(self.index)[0]
+        else:
+              return self.chooseAction(gameState)
+
+    def chooseAction(self, gameState):
+        return self.GetAction(gameState)
+
+    def getSuccessor(self, gameState, action):
+        """
+        Finds the next successor which is a grid position (location tuple).
+        """
+        successor = gameState.generateSuccessor(self.index, action)
+        return successor
 
 
 class alphaAgent(AlphaBetaAgent):

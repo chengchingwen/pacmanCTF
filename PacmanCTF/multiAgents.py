@@ -221,49 +221,19 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     def value(self, state, index, a, b):
         mindex=index%6
-
-        #print "v"
-        #print "index" , index
-        '''
-        print "self.index", self.index
-        print "state", state
-        print mindex
-        print state.getAgentState(mindex)
-        print state.getAgentState(mindex)
-        '''
-        #raw_input()
-
         if index/6 >= self.depth or state.isOver():
-            #print "hey"
             z= (self.betterEvaluationFunction( state), "Stop")
-            #print z
-            #print z[0]
             return z
         if mindex in self.getTeam(state) and state.getAgentState(mindex).configuration:
-            #print "max", state.getAgentState(mindex)
             i=self.maxv(state, index, a, b)
             return i
         elif mindex in self.getOpponents(state) and state.getAgentState(mindex).configuration:
-            #print "min", state.getAgentState(mindex)
             j=self.minv(state, index, a, b)
             return j
         else:
-            '''
-            print "else"
-            raw_input()
-            '''
             return self.value(state, index+1, a, b)
 
     def maxv(self, state, index, a, b):
-
-        #print "maxv"
-        '''
-        print "index" , index
-        print "self.index", self.index
-        print "state", state
-        print
-        raw_input()
-        '''
         v=(-float("inf"),'Stop')
         nindex=(index)%6
         for way in state.getLegalActions(nindex):
@@ -274,20 +244,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 return v
             if v[0]>=a:
                 a=v[0]
-        #print v
-        #raw_input()
         return v
 
     def minv(self, state, index, a, b):
-
-        #print "minv"
-        '''
-        print "index" , index
-        print "self.index", self.index
-        print "state", state
-        print
-        raw_input()
-        '''
         v=(float("inf"),'Stop')
         nindex=(index)%6
         for way in state.getLegalActions(nindex):
@@ -298,19 +257,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 return v
             if v[0]<=b:
                 b=v[0]
-        #print v
-        #raw_input()
         return v
 
     def betterEvaluationFunction(self, currentGameState):
-        """
-          Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
-          evaluation function (question 5).
-
-          DESCRIPTION: <write something here so we know what you did>
-        """
-        "*** YOUR CODE HERE ***"
-
         successor = currentGameState
         myState = successor.getAgentState(self.index)
         newPos = myState.getPosition()
@@ -320,6 +269,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         ghostpos =[]
         scaredghost =[]
         dangerzone =[]
+        x7 = myState.ownFlag
         '''
         for i in newGhostStates:
             if newScaredTimes[newGhostStates.index(i)]==0:
@@ -348,7 +298,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
         x6 = len(invaders)
         if len(invaders) > 0:
-            invdists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
+            invdists = [self.getMazeDistance(newPos, a.getPosition()) for a in invaders]
             x5=len(invdists)
         for i in Food:
             for j in i:
@@ -365,7 +315,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         if newPos in dangerzone:
             x2 = -60
         x3=-sum([util.manhattanDistance(newPos, y) for y in scaredghost])
-        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + 0.5* successor.getScore() - x5 - x6
+        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + 0.5* successor.getScore() - x5 - x6 + 2*x7
         return a
 
 
@@ -389,20 +339,22 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return a[1]
 
     def value(self, state, index):
-        mindex=index%state.getNumAgents()
-        if index/state.getNumAgents() >= self.depth or state.isOver():
-            z= (self.evaluationFunction(state), "Stop")
+        mindex=index%6
+        if index/6 >= self.depth or state.isOver():
+            z= (self.betterEvaluationFunction(state), "Stop")
             return z
-        if mindex in self.getTeam(state):
+        if mindex in self.getTeam(state) and state.getAgentState(mindex).configuration:
             i=self.maxv(state, index)
             return i
-        else:
+        elif mindex in self.getOpponents(state) and state.getAgentState(mindex).configuration:
             j=self.expv(state, index)
             return j
-        
+        else:
+            return self.value(state, index+1)
+
     def maxv(self, state, index):
         v=(-float("inf"),'Stop')
-        nindex=(index)%state.getNumAgents()
+        nindex=(index)%6
         for way in state.getLegalActions(nindex):
             k=(self.value(state.generateSuccessor(nindex, way),index+1)[0],way)
             if k[0]>=v[0]:
@@ -411,10 +363,68 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     def expv(self, state, index):
         v=0 
-        nindex=(index)%state.getNumAgents()
+        nindex=(index)%6
         for way in state.getLegalActions(nindex):
             p=1.0/len(state.getLegalActions(nindex))
             k=(self.value(state.generateSuccessor(nindex, way),index+1)[0],way)
             v+=p * k[0]
         return (v, way)
+    def betterEvaluationFunction(self, currentGameState):
+        successor = currentGameState
+        myState = successor.getAgentState(self.index)
+        newPos = myState.getPosition()
+        newFood = self.getFood(successor)
+        newGhostStates = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        ghostpos =[]
+        scaredghost =[]
+        dangerzone =[]
+        x7 = myState.ownFlag
+        '''
+        for i in newGhostStates:
+            if newScaredTimes[newGhostStates.index(i)]==0:
+                ghostpos.append(i.getPosition())
+                for state in [currentGameState.generateSuccessor(newGhostStates.index(i), way) for way in currentGameState.getLegalActions(newGhostStates.index(i))]:
+                    for state2 in [state.generateSuccessor(newGhostStates.index(i), way2) for way2 in state.getLegalActions(newGhostStates.index(i))]:
+                        for a in [state2.getAgentState(m) for m in  self.getOpponents(state2)]:
+                            dangerzone.append(a.getPosition())
+            else:
+                scaredghost.append(i.getPosition())
+        '''
+        h=0
+        Food = list(newFood)
+        z=(0,0)
+        x=float("inf")
+        for i in range(len(Food)):
+            for j in range(len(Food[0])):
+                if Food[i][j]:
+                    h+=1
+                    if self.getMazeDistance(newPos, (i,j))<x:
+                        z=(i,j)
+                        x=self.getMazeDistance(newPos, z)
+        k=0
+        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
+        x5=0
+        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+        x6 = len(invaders)
+        if len(invaders) > 0:
+            invdists = [self.getMazeDistance(newPos, a.getPosition()) for a in invaders]
+            x5=len(invdists)
+        for i in Food:
+            for j in i:
+                if j:
+                    k-=1
+        x4=0
+        for i in newScaredTimes:
+            if i >0:
+                x4+=29
+        if h==0:
+            x=10
+        x1=k
+        x2=0
+        if newPos in dangerzone:
+            x2 = -60
+        x3=-sum([util.manhattanDistance(newPos, y) for y in scaredghost])
+        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + 0.5* successor.getScore() - x5 - x6 + 2*x7
+        return a
 
