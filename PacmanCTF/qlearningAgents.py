@@ -134,7 +134,7 @@ class QLearningAgent(ReinforcementAgent):
 class PacmanQAgent(QLearningAgent):
     "Exactly the same as QLearningAgent, but with different default parameters"
 
-    def __init__(self, index, epsilon=0.05,gamma=0.8,alpha=0.2, numTraining=2000, **args):
+    def __init__(self, index, epsilon=0.3,gamma=0.8,alpha=0.2, numTraining=2000, **args):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -175,8 +175,9 @@ class ApproximateQAgent(PacmanQAgent):
         #self.featExtractor = util.lookup(extractor, globals())()
         PacmanQAgent.__init__(self, index, **args)
         self.weights = util.Counter()
-
-        f=open("pacmemory", 'r+')
+        self.data=["pacmemory", "pacmemory1", "pacmemory2", "pacmemory3",
+              "pacmemory4", "pacmemory5"]
+        f=open( self.data[self.index] , 'r+')
         for line in f:
             self.weights[line.split()[0]] = float(line.split()[1])
         f.close()
@@ -216,17 +217,18 @@ class ApproximateQAgent(PacmanQAgent):
         # call the super-class final method
         PacmanQAgent.final(self, state)
         # did we finish training?
+        f=open(self.data[self.index], "w")
+        for p in self.weights.items():
+            f.write(p[0])
+            f.write(" ")
+            f.write(str(p[1]))
+            f.write('\n')
+        print self.weights
+        f.close()        
+
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
-            f=open("pacmemory", 'w')
-            for p in self.weights.items():
-                f.write(p[0])
-                f.write(" ")
-                f.write(str(p[1]))
-                f.write('\n')
-            print self.weights
-            if self.index==5:
-                f.close()
+        
 
 

@@ -156,7 +156,7 @@ class myAgent(ApproximateQAgent):
 
         # count the number of ghosts 1-step away
         features["#-of-ghosts-1-step-away"] = sum((next_x, next_y) in Actions.getLegalNeighbors(g, walls) for g in ghosts if g)
-        if myState.isPacman:features['ghost-distance']*=-1
+        if myState.isPacman:features['#-of-ghosts-1-step-away']*=-1
 
         features["own-flag"]=myState.ownFlag
 
