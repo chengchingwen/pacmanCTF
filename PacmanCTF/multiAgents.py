@@ -142,7 +142,7 @@ class MultiAgentSearchAgent(CaptureAgent):
       is another abstract class.
     """
 
-    def __init__(self, index ,evalFn = 'betterEvaluationFunction', depth = '2'):
+    def __init__(self, index ,evalFn = 'betterEvaluationFunction', depth = '1'):
         CaptureAgent.__init__(self, index)
         #self.index = 0 # Pacman is always agent index 0
         self.evaluationFunction = self.betterEvaluationFunction

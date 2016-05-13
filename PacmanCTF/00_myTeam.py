@@ -137,6 +137,7 @@ class myAgent(ApproximateQAgent):
     def getFeatures(self, state, action):
         # extract the grid of food and wall locations and get the ghost locations
         food = self.getFood(state)
+        deffoood = self.getFoodYouAreDefending(state)
         walls = state.getWalls()
         #ghosts = self.getGhostPositions()
         ghosts = [ state.getAgentPosition(x) for x in self.getOpponents(state)]
@@ -150,8 +151,14 @@ class myAgent(ApproximateQAgent):
         next_x, next_y = int(x + dx), int(y + dy)
         myState = successor.getAgentState(self.index)
         myPos = myState.getPosition()
-        features['#-of-food'] = len([i for i in food if i])
-
+        for i in food:
+            for j in i:
+                if j:
+                    features['#-of-food'] +=1
+        for i in deffoood:
+            for j in i:
+                if j:
+                    features['#-of-def-food']+=1
         features['onDefense'] = 1
         if myState.isPacman: features['onDefense'] = 0
 
