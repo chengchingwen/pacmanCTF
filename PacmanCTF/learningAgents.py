@@ -161,7 +161,7 @@ class ReinforcementAgent(ValueEstimationAgent):
     def isInTesting(self):
         return not self.isInTraining()
 
-    def __init__(self, index,actionFn = None, numTraining=100, epsilon=0.07, alpha=0.2, gamma=0.7):
+    def __init__(self, index,actionFn = None, numTraining=100, epsilon=0.05, alpha=0.2, gamma=0.9):
         """
         actionFn: Function which takes a state and returns the list of legal actions
 

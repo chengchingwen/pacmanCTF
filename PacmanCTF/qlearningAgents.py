@@ -179,7 +179,7 @@ class ApproximateQAgent(PacmanQAgent):
               "pacmemory4", "pacmemory5"]
         f=open( self.data[self.index] , 'r+')
         for line in f:
-            self.weights[line.split()[0]] = float(line.split()[1])
+            self.weights[int(line.split()[0])] = float(line.split()[1])
         f.close()
         '''
         w=
@@ -219,7 +219,7 @@ class ApproximateQAgent(PacmanQAgent):
         # did we finish training?
         f=open(self.data[self.index], "w")
         for p in self.weights.items():
-            f.write(p[0])
+            f.write(str(hash(p[0])))
             f.write(" ")
             f.write(str(p[1]))
             f.write('\n')

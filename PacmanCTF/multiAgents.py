@@ -264,23 +264,30 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         myState = successor.getAgentState(self.index)
         newPos = myState.getPosition()
         newFood = self.getFood(successor)
-        newGhostStates = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newGhostStates = [(successor.getAgentState(i),i)  for i in self.getOpponents(successor) if successor.getAgentState(i).configuration ]
+        newScaredTimes = [ghostState[0].scaredTimer for ghostState in newGhostStates]
         ghostpos =[]
         scaredghost =[]
         dangerzone =[]
         x7 = myState.ownFlag
-        '''
-        for i in newGhostStates:
-            if newScaredTimes[newGhostStates.index(i)]==0:
-                ghostpos.append(i.getPosition())
-                for state in [currentGameState.generateSuccessor(newGhostStates.index(i), way) for way in currentGameState.getLegalActions(newGhostStates.index(i))]:
-                    for state2 in [state.generateSuccessor(newGhostStates.index(i), way2) for way2 in state.getLegalActions(newGhostStates.index(i))]:
-                        for a in [state2.getAgentState(m) for m in  self.getOpponents(state2)]:
-                            dangerzone.append(a.getPosition())
-            else:
-                scaredghost.append(i.getPosition())
-        '''
+        x8=0
+        if self.getFlags(successor):
+            x8 = self.getMazeDistance(newPos, self.getFlags(successor)[0])
+
+        if myState.isPacman or (not myState.isPacman and myState.scaredTimer) or x7:
+            for i in newGhostStates:
+                if newScaredTimes[newGhostStates.index(i)]==0:
+                    ghostpos.append(i[0].getPosition())
+                    for state in [currentGameState.generateSuccessor(i[1], way) for way in currentGameState.getLegalActions(i[1])]:
+                        for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
+                            for a in [state2.getAgentState(m) for m in  self.getOpponents(state2)]:
+                                if a.getPosition():
+                                    dangerzone.append(a.getPosition())
+
+        else:
+            for i in newGhostStates:
+                if newScaredTimes[newGhostStates.index(i)]:
+                    scaredghost.append(i[0].getPosition())
         h=0
         Food = list(newFood)
         z=(0,0)
@@ -293,13 +300,14 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                         z=(i,j)
                         x=self.getMazeDistance(newPos, z)
         k=0
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
         x5=0
-        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+        invaders = [a[0] for a in newGhostStates if a[0].isPacman and a[0].getPosition() != None]
+
+
         x6 = len(invaders)
         if len(invaders) > 0:
             invdists = [self.getMazeDistance(newPos, a.getPosition()) for a in invaders]
-            x5=len(invdists)
+            x5=min(invdists)
         for i in Food:
             for j in i:
                 if j:
@@ -312,12 +320,38 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             x=10
         x1=k
         x2=0
+        x9=0
+        if self._holl(successor, newPos):
+            x9 = -50
         if newPos in dangerzone:
             x2 = -60
+
+        if x7:
+            x2 *= 2
+            x1 = 0
+            x9 = -50
+
+
         x3=-sum([util.manhattanDistance(newPos, y) for y in scaredghost])
-        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + 0.5* successor.getScore() - x5 - x6 + 2*x7
+        #print "x=", x, " x1=", x1, " x2=", x2, " x3=", x3, " x4=", x4, " x5=", x5, " x7=", x7*200
+        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + self.getScore(successor) - 5*x5 - 2*x6 + x9#200*x7 -x8*100 + x9
         return a
 
+    def _holl(self,state, point):
+        pos = point
+        k=0
+        vector={"East":(1,0), "West":(-1,0), "North":(0,1), "South":(0,-1), "Stop":(0,0)}
+        for vec in vector.values():
+            try:
+                if state.hasFood(pos[0]+vec[0], pos[1]+vec[1]):
+                    return False
+                elif state.hasWall(pos[0]+vec[0], pos[1]+vec[1]):
+                    k+=1
+            except:
+                pass
+        if k==3:
+            return True
+        return False
 
 
 
@@ -374,23 +408,30 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         myState = successor.getAgentState(self.index)
         newPos = myState.getPosition()
         newFood = self.getFood(successor)
-        newGhostStates = [successor.getAgentState(i) for i in self.getOpponents(successor)]
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        newGhostStates = [(successor.getAgentState(i),i)  for i in self.getOpponents(successor) if successor.getAgentState(i).configuration ]
+        newScaredTimes = [ghostState[0].scaredTimer for ghostState in newGhostStates]
         ghostpos =[]
         scaredghost =[]
         dangerzone =[]
         x7 = myState.ownFlag
-        '''
-        for i in newGhostStates:
-            if newScaredTimes[newGhostStates.index(i)]==0:
-                ghostpos.append(i.getPosition())
-                for state in [currentGameState.generateSuccessor(newGhostStates.index(i), way) for way in currentGameState.getLegalActions(newGhostStates.index(i))]:
-                    for state2 in [state.generateSuccessor(newGhostStates.index(i), way2) for way2 in state.getLegalActions(newGhostStates.index(i))]:
-                        for a in [state2.getAgentState(m) for m in  self.getOpponents(state2)]:
-                            dangerzone.append(a.getPosition())
-            else:
-                scaredghost.append(i.getPosition())
-        '''
+        x8=0
+        if self.getFlags(successor):
+            x8 = self.getMazeDistance(newPos, self.getFlags(successor)[0])
+
+        if myState.isPacman or (not myState.isPacman and myState.scaredTimer) or x7:
+            for i in newGhostStates:
+                if newScaredTimes[newGhostStates.index(i)]==0:
+                    ghostpos.append(i[0].getPosition())
+                    for state in [currentGameState.generateSuccessor(i[1], way) for way in currentGameState.getLegalActions(i[1])]:
+                        for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
+                            for state3 in [state.generateSuccessor(i[1], way3) for way3 in state.getLegalActions(i[1])]:
+                                for a in [state3.getAgentState(m) for m in  self.getOpponents(state3)]:
+                                    if a.getPosition():
+                                        dangerzone.append(a.getPosition())
+        else:
+            for i in newGhostStates:
+                if newScaredTimes[newGhostStates.index(i)]:
+                    scaredghost.append(i[0].getPosition())
         h=0
         Food = list(newFood)
         z=(0,0)
@@ -403,13 +444,14 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                         z=(i,j)
                         x=self.getMazeDistance(newPos, z)
         k=0
-        enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
         x5=0
-        invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
+        invaders = [a[0] for a in newGhostStates if a[0].isPacman and a[0].getPosition() != None]
+
+
         x6 = len(invaders)
         if len(invaders) > 0:
             invdists = [self.getMazeDistance(newPos, a.getPosition()) for a in invaders]
-            x5=len(invdists)
+            x5=min(invdists)
         for i in Food:
             for j in i:
                 if j:
@@ -422,9 +464,41 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             x=10
         x1=k
         x2=0
+        x9=0
+        if self._holl(successor, newPos):
+            x9 = -50
         if newPos in dangerzone:
             x2 = -60
+        z=1
+        if x7:
+            x2 *= 2
+            x1 = 0
+            x9 *= -50
+            z=0
+
         x3=-sum([util.manhattanDistance(newPos, y) for y in scaredghost])
-        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + 0.5* successor.getScore() - x5 - x6 + 2*x7
+        #print "x=", x, " x1=", x1, " x2=", x2, " x3=", x3, " x4=", x4, " x5=", x5, " x7=", x7*200
+        a=-x*0.3 +x1  + x2 + x3*0.7 + x4 + z*self.getScore(successor) - 5*x5 - 2*x6 + 200*x7 -x8*100 + x9
         return a
 
+    def _holl(self,state, point, T=0):
+        pos = (int(point[0]), int(point[1]))
+        k=0
+        if state.hasWall(pos[0], pos[1]):
+            return False
+        vector={"East":(1,0), "West":(-1,0), "North":(0,1), "South":(0,-1)}
+        for vec in vector.values():
+            try:
+                #print pos,
+		if state.hasFood(pos[0]+vec[0], pos[1]+vec[1]):
+                    return False
+                elif state.hasWall(pos[0]+vec[0], pos[1]+vec[1]):
+                    k+=1
+            except:
+                pass
+        #print k, T
+        if T==0 and k==2:
+            return any([self._holl(state,(pos[0]+vec[0], pos[1]+vec[1]), T=1) for vec in vector.values()])
+        if T==1 and k==3:
+            return True
+        return False
