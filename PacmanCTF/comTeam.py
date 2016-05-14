@@ -81,8 +81,9 @@ class myAgent(ApproximateQAgent):
         newDefFood = list(self.getFoodYouAreDefending(successor))
         newState = successor.getAgentState(self.index)
         newWalls = successor.getWalls()
-        myPos = myState.getPosition()
-        newPos = newState.getPosition()
+        
+        myPos = int(myState.getPosition()[0]), int(myState.getPosition()[1])
+        newPos = int(newState.getPosition()[0]), int(newState.getPosition()[1])
 
         newGhostStates = [(successor.getAgentState(i),i)  for i in self.getOpponents(successor) if successor.getAgentState(i).configuration]
         newScaredTimes = [ghostState[0].scaredTimer for ghostState in newGhostStates]
@@ -97,7 +98,7 @@ class myAgent(ApproximateQAgent):
               for state in [successor.generateSuccessor(i[1], way) for way in successor.getLegalActions(i[1])]:
                 for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
                   for state3 in [state2.generateSuccessor(i[1], way3) for way3 in state2.getLegalActions(i[1])]:
-                    for a in [state3.getAgentState(m) for m in  self.getOpponents(state3) if successor.getAgentState(i).configuration]:
+                    for a in [state3.getAgentState(m) for m in  self.getOpponents(state3) if successor.getAgentState(i[1]).configuration]:
                       if a.getPosition() and (not a.isPacman or (a.isPacman and (newState.ownFlag or myState.ownFlag))):
                         dangerzone.append(a.getPosition())
           else:
@@ -111,10 +112,10 @@ class myAgent(ApproximateQAgent):
         features["bias"] = 1.0
         
         if myState.isPacman and newState.isPacman:
-          if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][NewPos[1]]:
+          if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][newPos[1]]:
             features['eat-food'] +=1
         elif features["defending"] and features["goAttack"]:
-          if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][NewPos[1]]:
+          if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][newPos[1]]:
             features['eat-food'] +=1
         elif features["defending"] and not newState.isPacman:
           for i in range(len(DefFood)):

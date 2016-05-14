@@ -1,6 +1,13 @@
-reverse -0.319983426823
-closest-food 1.51574488454
+closest-food 4.46562873359
+reverse -0.703862211135
+goAttack 0.0
 own-flag -36.536445648
-stop 0.198323851018
-bias -0.389460511796
+stop -0.771817163318
+goAtteck 0.0
+bias 48.9422289906
+self-scared -1.17832360987
+defending 49.3316895024
+defend-food -34.2339137496
 eat-food 7.00393962077
+eat-pacman 11.6400495504
+in-danger 0.0
