@@ -107,7 +107,7 @@ class myAgent(ApproximateQAgent):
 
 
         features["defending"] = float(not myState.isPacman)
-        features["goAtteck"] = float(newState.isPacman)
+        features["goAttack"] = float(newState.isPacman)
         # compute the location of pacman after he takes the action
         features["bias"] = 1.0
         
