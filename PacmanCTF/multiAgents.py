@@ -424,7 +424,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     ghostpos.append(i[0].getPosition())
                     for state in [currentGameState.generateSuccessor(i[1], way) for way in currentGameState.getLegalActions(i[1])]:
                         for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
-                            for state3 in [state.generateSuccessor(i[1], way3) for way3 in state.getLegalActions(i[1])]:
+                            for state3 in [state2.generateSuccessor(i[1], way3) for way3 in state2.getLegalActions(i[1])]:
                                 for a in [state3.getAgentState(m) for m in  self.getOpponents(state3)]:
                                     if a.getPosition():
                                         dangerzone.append(a.getPosition())
@@ -475,6 +475,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             x1 = 0
             x9 *= -50
             z=0
+            return self.getScore(successor)
 
         x3=-sum([util.manhattanDistance(newPos, y) for y in scaredghost])
         #print "x=", x, " x1=", x1, " x2=", x2, " x3=", x3, " x4=", x4, " x5=", x5, " x7=", x7*200
