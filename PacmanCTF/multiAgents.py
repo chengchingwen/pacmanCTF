@@ -424,10 +424,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     ghostpos.append(i[0].getPosition())
                     for state in [currentGameState.generateSuccessor(i[1], way) for way in currentGameState.getLegalActions(i[1])]:
                         for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
-                            for state3 in [state2.generateSuccessor(i[1], way3) for way3 in state2.getLegalActions(i[1])]:
-                                for a in [state3.getAgentState(m) for m in  self.getOpponents(state3)]:
-                                    if a.getPosition():
-                                        dangerzone.append(a.getPosition())
+                            for a in [state2.getAgentState(m) for m in  self.getOpponents(state2)]:
+                                if a.getPosition():
+                                    dangerzone.append(a.getPosition())
         else:
             for i in newGhostStates:
                 if newScaredTimes[newGhostStates.index(i)]:
