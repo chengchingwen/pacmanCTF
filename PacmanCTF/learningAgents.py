@@ -211,8 +211,12 @@ class ReinforcementAgent(ValueEstimationAgent):
             This is where we ended up after our last action.
             The simulation should somehow ensure this is called
         """
+        if self.red:
+            k=1
+        else:
+            k=-1
         if not self.lastState is None:
-            reward = state.getScore() - self.lastState.getScore()
+            reward = self.getScore(state) - self.lastState.getScore()*k
             self.observeTransition(self.lastState, self.lastAction, state, reward)
         return state
 
@@ -225,8 +229,12 @@ class ReinforcementAgent(ValueEstimationAgent):
         """
           Called by Pacman game at the terminal state
         """
+        if self.red:
+            k=1
+        else:
+            k=-1
         if not self.lastState is None:
-            deltaReward = state.getScore() - self.lastState.getScore()
+            deltaReward = self.getScore(state) - self.lastState.getScore()*k
             self.observeTransition(self.lastState, self.lastAction, state, deltaReward)
         self.stopEpisode()
 
@@ -235,7 +243,7 @@ class ReinforcementAgent(ValueEstimationAgent):
             self.episodeStartTime = time.time()
         if not 'lastWindowAccumRewards' in self.__dict__:
             self.lastWindowAccumRewards = 0.0
-        self.lastWindowAccumRewards += state.getScore()
+        self.lastWindowAccumRewards += self.getScore(state)
 
         NUM_EPS_UPDATE = 100
         if self.episodesSoFar % NUM_EPS_UPDATE == 0:
