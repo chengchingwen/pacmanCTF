@@ -286,11 +286,10 @@ class GameState:
 
   def makeObservation(self, index):
     state = self.deepCopy()
-
     # Adds the sonar signal
     pos = state.getAgentPosition(index)
     n = state.getNumAgents()
-    distances = [noisyDistance(pos, state.getAgentPosition(i)) for i in range(n)]
+    distances = [noisyDistance(pos, state.getAgentPosition(i)) for i in range(n) ]
     state.agentDistances = distances
 
     # Remove states of distant opponents

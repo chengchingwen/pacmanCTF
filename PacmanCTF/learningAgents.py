@@ -131,7 +131,7 @@ class ReinforcementAgent(ValueEstimationAgent):
         """
         self.episodeRewards += deltaReward
         self.update(state,action,nextState,deltaReward)
-        return state.makeObservation(self.index)
+
 
     def startEpisode(self):
         """
@@ -211,6 +211,7 @@ class ReinforcementAgent(ValueEstimationAgent):
             This is where we ended up after our last action.
             The simulation should somehow ensure this is called
         """
+        
         if self.red:
             k=1
         else:
@@ -218,8 +219,8 @@ class ReinforcementAgent(ValueEstimationAgent):
         if not self.lastState is None:
             reward = self.getScore(state) - self.lastState.getScore()*k
             self.observeTransition(self.lastState, self.lastAction, state, reward)
-        return state
-
+        return state.makeObservation(self.index)
+    
     def registerInitialState(self, state):
         self.startEpisode()
         if self.episodesSoFar == 0:

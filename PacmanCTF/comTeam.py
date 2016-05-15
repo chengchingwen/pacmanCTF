@@ -53,6 +53,7 @@ def createTeam(firstIndex, secondIndex, thirdIndex, isRed,
 class myAgent(ApproximateQAgent):
     def registerInitialState(self, gameState):
         CaptureAgent.registerInitialState(self, gameState)
+        self.myFlagPos = self.getFlagsYouAreDefending(gameState)[0]
     def getAction(self, gameState):
         self.observationHistory.append(gameState)
         myState = gameState.getAgentState(self.index)
@@ -82,9 +83,10 @@ class myAgent(ApproximateQAgent):
         newState = successor.getAgentState(self.index)
         newWalls = successor.getWalls()
         
+        features['has-food'] = any([any(i) for i in Food])
+        
         myPos = int(myState.getPosition()[0]), int(myState.getPosition()[1])
         newPos = int(newState.getPosition()[0]), int(newState.getPosition()[1])
-
         newGhostStates = [(successor.getAgentState(i),i)  for i in self.getOpponents(successor) if successor.getAgentState(i).configuration]
         newScaredTimes = [ghostState[0].scaredTimer for ghostState in newGhostStates]
         dangerzone = []
@@ -106,11 +108,15 @@ class myAgent(ApproximateQAgent):
               scaredghost.append(i[0].getPosition())
 
 
+        if features["has-food"]:
+          features["goAttack"] = float(newState.isPacman)
         features["defending"] = float(not myState.isPacman)
-        features["goAttack"] = float(newState.isPacman)
         # compute the location of pacman after he takes the action
         features["bias"] = 1.0
-        
+        #print self
+        #print state.getAgentDistances()
+        #print self.getOpponents(successor)
+        #raw_input()
         if myState.isPacman and newState.isPacman:
           if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][newPos[1]]:
             features['eat-food'] +=1
@@ -122,25 +128,30 @@ class myAgent(ApproximateQAgent):
             for j in range(len(DefFood[0])):
               if newDefFood[i][j]:
                 features['defend-food'] +=1
+          if state.getAgentDistances():
+            features["eat-pacman"] = min([state.getAgentDistances()[i] - successor.getAgentDistances()[i] for i in self.getOpponents(successor)])
+
         else:
           for i in range(len(DefFood)):
             for j in range(len(DefFood[0])):
               if newDefFood[i][j]:
                 features['defend-food'] +=1
+          if state.getAgentDistances():
+            features["eat-pacman"] = min([state.getAgentDistances()[i] - successor.getAgentDistances()[i] for i in self.getOpponents(successor)])
           
-                           
+        #print state.getAgentDistances()
 
         features["in-danger"] = float(newPos in dangerzone)
         
         features["own-flag"]=float(myState.ownFlag or newState.ownFlag)
 
-        critical_index = self.getOwnFlagOpponent(successor)
+        critical_index = self.getOwnFlagOpponent(state)
         if critical_index:
-          critical_pos = state3.getAgentState(critical_index).getPosution()
+          critical_pos = state.getAgentState(critical_index).getPosition()
           if critical_pos:
             features["critical-point"] = self.getMazeDistance(newPos, critical_pos)
           else:
-            features["critical-point"] = self.getMazeDistance(newPos, self.getFlagsYouAreDefending(successor))
+            features["critical-point"] = self.getMazeDistance(newPos, self.myFlagPos)
 
 
 

@@ -238,12 +238,12 @@ class CaptureAgent(Agent):
 	  for i in gameState.getBlueTeamIndices():
 		if gameState.data.agentStates[i].ownFlag:
 			return i
-		else: return None
+          else: return None
     else:
 	  for i in gameState.getRedTeamIndices():
 		if gameState.data.agentStates[i].ownFlag:
 			return i
-		else: return None
+          else: return None
 
   def getTeam(self, gameState):
     """
