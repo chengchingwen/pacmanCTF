@@ -17,7 +17,7 @@ import random, time, util
 from game import Directions, Actions
 import game
 from qlearningAgents import ApproximateQAgent
-
+from math import pi
 
 #################
 # Team creation #
@@ -83,7 +83,7 @@ class myAgent(ApproximateQAgent):
             i=self.maxv(state, index, a, b)
             return i
         elif mindex in self.getOpponents(state) and state.getAgentState(mindex).configuration:
-            j=self.minv(state, index, a, b)
+            j=random.choice((self.minv, self.expv))(state, index, a, b)
             return j
         else:
             return self.value(state, index+1, a, b)
@@ -113,6 +113,14 @@ class myAgent(ApproximateQAgent):
             if v[0]<=b:
                 b=v[0]
         return v
+    def expv(self, state, index, a, b):
+        v=0 
+        nindex=(index)%6
+        for way in state.getLegalActions(nindex):
+            p=1.0/len(state.getLegalActions(nindex))
+            k=(self.value(state.generateSuccessor(nindex, way),index+1, a, b)[0],way)
+            v+=p * k[0]
+        return (v, way)
 
 
     def getSuccessor(self, gameState, action):
@@ -146,11 +154,9 @@ class myAgent(ApproximateQAgent):
             if newScaredTimes[newGhostStates.index(i)]==0:
               ghostpos.append(i[0].getPosition())
               for state in [successor.generateSuccessor(i[1], way) for way in successor.getLegalActions(i[1])]:
-                for state2 in [state.generateSuccessor(i[1], way2) for way2 in state.getLegalActions(i[1])]:
-                  for state3 in [state2.generateSuccessor(i[1], way3) for way3 in state2.getLegalActions(i[1])]:
-                    for a in [state3.getAgentState(m) for m in  self.getOpponents(state3) if successor.getAgentState(i[1]).configuration]:
-                      if a.getPosition() and (not a.isPacman or (a.isPacman and (newState.ownFlag or myState.ownFlag))):
-                        dangerzone.append(a.getPosition())
+                for a in [state.getAgentState(m) for m in  self.getOpponents(state) if state.getAgentState(i[1]).configuration]:
+                  if a.getPosition() and (not a.isPacman or (a.isPacman and (newState.ownFlag or myState.ownFlag))):
+                    dangerzone.append(a.getPosition())
           else:
             if newScaredTimes[newGhostStates.index(i)]:
               scaredghost.append(i[0].getPosition())
@@ -160,7 +166,7 @@ class myAgent(ApproximateQAgent):
           features["goAttack"] = float(newState.isPacman)
         features["defending"] = float(not myState.isPacman)
         # compute the location of pacman after he takes the action
-        features["bias"] = 1.0
+
         #print self
         #print state.getAgentDistances()
         #print self.getOpponents(successor)
@@ -212,7 +218,7 @@ class myAgent(ApproximateQAgent):
 
 
 
-        if not myState.isPacman or not newState.isPacman:
+        if not newState.isPacman:
           features['self-scared'] = myState.scaredTimer > 0
 
 
@@ -220,13 +226,8 @@ class myAgent(ApproximateQAgent):
         if dist is not None:
             # make the distance a number less than one otherwise the update
             # will diverge wildly
-            features["closest-food"] = float(dist) / (walls.width * walls.height)
-        features.divideAll(10.0)
-        if action == Directions.STOP: features['stop'] = 1
-        rev = Directions.REVERSE[state.getAgentState(self.index).configuration.direction]
-        if action == rev: features['reverse'] = 1
-
-
+            features["closest-food"] = 1.0 / (float(dist)+1.3)
+        features.divideAll(pi)
         return features
 
     def getQValue(self, state, action):
