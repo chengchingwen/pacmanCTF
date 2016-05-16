@@ -140,7 +140,7 @@ class ReinforcementAgent(ValueEstimationAgent):
         self.lastState = None
         self.lastAction = None
         self.episodeRewards = 0.0
-
+        self.time = time.time()
     def stopEpisode(self):
         """
           Called by environment when episode is done
@@ -217,7 +217,8 @@ class ReinforcementAgent(ValueEstimationAgent):
         else:
             k=-1
         if not self.lastState is None:
-            reward = self.getScore(state) - self.lastState.getScore()*k
+            reward = self.getScore(state) - self.lastState.getScore()*k -  (time.time() - self.time)
+            print reward
             self.observeTransition(self.lastState, self.lastAction, state, reward)
         return state.makeObservation(self.index)
     
