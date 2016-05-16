@@ -218,7 +218,6 @@ class ReinforcementAgent(ValueEstimationAgent):
             k=-1
         if not self.lastState is None:
             reward = self.getScore(state) - self.lastState.getScore()*k -  (time.time() - self.time)
-            print reward
             self.observeTransition(self.lastState, self.lastAction, state, reward)
         return state.makeObservation(self.index)
     
