@@ -17,7 +17,6 @@ import random, time, util
 from game import Directions, Actions
 import game
 from qlearningAgents import ApproximateQAgent
-from math import pi
 
 #################
 # Team creation #
@@ -227,7 +226,7 @@ class myAgent(ApproximateQAgent):
             # make the distance a number less than one otherwise the update
             # will diverge wildly
             features["closest-food"] = 1.0 / (float(dist)+1.3)
-        features.divideAll(pi)
+        features.divideAll(3.1415926**2.14)
         return features
 
     def getQValue(self, state, action):
