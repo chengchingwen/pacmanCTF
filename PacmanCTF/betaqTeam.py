@@ -64,6 +64,16 @@ class myAgent(ApproximateQAgent):
         else:
               return self.chooseAction(gameState)
     def chooseAction(self, gameState):
+        actions = gameState.getLegalActions(self.index)
+      
+        # You can profile your evaluation time by uncommenting these lines
+        # start = time.time()
+        values = [self.getFeatures1(gameState, a)*self.getWeights1(gameState, a) for a in actions]
+        # print 'eval time for agent %d: %.4f' % (self.index, time.time() - start)
+        
+        maxValue = max(values)
+        bestActions = [a for a, v in zip(actions, values) if v == maxValue]
+
         legalActions = gameState.getLegalActions(self.index)
         action = None
         if util.flipCoin(self.epsilon):
@@ -71,7 +81,25 @@ class myAgent(ApproximateQAgent):
         else:
             action = self.value(gameState, self.index, -float("inf"), float("inf"))[1]
         self.doAction(gameState,action)
+        return random.choice(bestActions)
         return action
+    def getFeatures1(self, gameState, action):
+        features = util.Counter()
+        successor = self.getSuccessor(gameState, action)
+        foodList = self.getFood(successor).asList()    
+        features['successorScore'] = -len(foodList)#self.getScore(successor)
+
+        # Compute distance to the nearest food
+
+        if len(foodList) > 0: # This should always be True,  but better safe than sorry
+          myPos = successor.getAgentState(self.index).getPosition()
+          minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+          features['distanceToFood'] = minDistance
+        return features
+
+    def getWeights1(self, gameState, action):
+        return {'successorScore': 100, 'distanceToFood': -1}
+
 
     def value(self, state, index, a, b):
         mindex=index%6
@@ -129,16 +157,16 @@ class myAgent(ApproximateQAgent):
         features = util.Counter()
         # extract the grid of food and wall locations and get the ghost locations
         Food = list(self.getFood(state))
-        DefFood = list(self.getFoodYouAreDefending(state))
+        DefFood = self.getFoodYouAreDefending(state).asList()
         walls = state.getWalls()
         myState = state.getAgentState(self.index)
         successor = state.generateSuccessor(self.index, action)
         newFood = list(self.getFood(successor))
-        newDefFood = list(self.getFoodYouAreDefending(successor))
+        newDefFood = self.getFoodYouAreDefending(successor).asList()
         newState = successor.getAgentState(self.index)
         newWalls = successor.getWalls()
-        
-        features['has-food'] = any([any(i) for i in Food])
+        features['successorScore'] = self.getScore(successor)
+        features['has-food'] = len(self.getFood(successor).asList())
         
         myPos = int(myState.getPosition()[0]), int(myState.getPosition()[1])
         newPos = int(newState.getPosition()[0]), int(newState.getPosition()[1])
@@ -177,18 +205,12 @@ class myAgent(ApproximateQAgent):
           if Food[newPos[0]][newPos[1]] ^ newFood[newPos[0]][newPos[1]]:
             features['eat-food'] +=1
         elif features["defending"] and not newState.isPacman:
-          for i in range(len(DefFood)):
-            for j in range(len(DefFood[0])):
-              if newDefFood[i][j]:
-                features['defend-food'] +=1
+          features['defend-food'] = len(newDefFood)
           if state.getAgentDistances():
             features["eat-pacman"] = min([state.getAgentDistances()[i] - successor.getAgentDistances()[i] for i in self.getOpponents(successor)])
 
         else:
-          for i in range(len(DefFood)):
-            for j in range(len(DefFood[0])):
-              if newDefFood[i][j]:
-                features['defend-food'] +=1
+          features['defend-food'] = len(newDefFood)
           if state.getAgentDistances():
             features["eat-pacman"] = min([state.getAgentDistances()[i] - successor.getAgentDistances()[i] for i in self.getOpponents(successor)])
           
